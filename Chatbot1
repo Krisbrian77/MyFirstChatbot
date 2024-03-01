@@ -1,0 +1,129 @@
+from rich.console import Console
+from rich.panel import Panel
+import os
+import cohere
+import json
+from datetime import datetime  # Import datetime module
+
+# Clear the screen
+os.system('cls' if os.name == 'nt' else 'clear')
+
+# Initialize the Cohere client with your API key
+co = cohere.Client('xfjFwW0mnet9g2weZ7WQfxN4LS5Lehc2RQqg0JSb')
+
+# Define the file path to save the chat history
+chat_history_file = "chat_history.json"
+
+def load_chat_history():
+    """
+    Load chat history from the specified JSON file.
+
+    Returns:
+        list: List containing the chat history.
+    """
+    if os.path.exists(chat_history_file):
+        try:
+            with open(chat_history_file, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading chat history: {e}")
+    return []
+
+def save_chat_history(chat_history):
+    """
+    Save chat history to the specified JSON file.
+
+    Args:
+        chat_history (list): List containing the chat history.
+    """
+    try:
+        with open(chat_history_file, 'w') as f:
+            json.dump(chat_history, f, indent=4)
+    except Exception as e:
+        print(f"Error saving chat history: {e}")
+
+def interact_with_chatbot(chat_history, message):
+    """
+    Interact with the chatbot and update the chat history.
+
+    Args:
+        chat_history (list): List containing the chat history.
+        message (str): User input message.
+
+    Returns:
+        str: Response from the chatbot.
+    """
+    try:
+        response = co.chat(
+            chat_history=chat_history,
+            message=message,
+            connectors=[{"id": "web-search"}]
+        )
+        timestamp = datetime.now().strftime("%Y-%m-%d %I:%M %p")  # 12-hour clock format with AM/PM
+        chat_history.append({"role": "USER", "message": message, "timestamp": timestamp})  # Include timestamp
+        chat_history.append({"role": "CHATBOT", "message": response.text, "timestamp": timestamp})  # Include timestamp
+        return response.text
+    except Exception as e:
+        print(f"Error interacting with chatbot: {e}")
+
+def validate_input(user_input):
+    """
+    Validate user input to ensure it is not empty or contains only whitespace.
+
+    Args:
+        user_input (str): User input to be validated.
+
+    Returns:
+        bool: True if the input is valid, False otherwise.
+    """
+    if user_input.strip():
+        return True
+    return False
+
+def get_user_name():
+    """
+    Get the user's name.
+
+    Returns:
+        str: User's name.
+    """
+    return input("Enter your name: ")
+
+def main():
+    """
+    Main function to handle user interaction.
+    """
+    user_name = get_user_name()
+    chat_history = load_chat_history()
+
+    console = Console()
+
+    while True:
+        try:
+            user_question = console.input("[bold cyan]Enter your question[/bold cyan] (or type 'exit' to quit): ")
+            if user_question.lower() == 'exit':
+                save_chat_history(chat_history)
+                console.print("Goodbye!")
+                break
+
+            if not validate_input(user_question):
+                console.print("[bold red]Invalid input. Please enter a valid question.[/bold red]")
+                continue
+
+            response_text = interact_with_chatbot(chat_history, user_question)
+            timestamp = datetime.now().strftime("%Y-%m-%d %I:%M %p")  # 12-hour clock format with AM/PM
+            console.print(Panel(f"[bold blue]Hello {user_name}, here is the answer to your question:[/bold blue]\n{response_text}", title="Chatbot Response"))
+
+            next_action = console.input("\n[bold cyan]What's your next question[/bold cyan] or do you want to exit (type 'exit' to quit): ")
+            if next_action.lower() == 'exit':
+                save_chat_history(chat_history)
+                console.print("Goodbye!")
+                break
+        except KeyboardInterrupt:
+            console.print("\n[bold red]KeyboardInterrupt: Exiting...[/bold red]")
+            break
+        except Exception as e:
+            console.print(f"[bold red]An error occurred: {e}[/bold red]")
+
+if __name__ == "__main__":
+    main()
