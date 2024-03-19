@@ -17,7 +17,7 @@ data='{"contents":[{"parts":[{"text":"'"$user_question"'"}]}]}'
 response=$(curl -s \
 -H 'Content-Type: application/json' \
 -d "$data" \
--X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=AIzaSyAC62qfFgaXALUY_f9_orIt4N8lh7lg0uE")
+-X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=<Your Gemini API Key goes here")
 
 # Check for errors
 if [ $? -ne 0 ]; then
