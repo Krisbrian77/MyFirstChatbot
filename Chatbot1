@@ -9,7 +9,7 @@ from datetime import datetime  # Import datetime module
 os.system('cls' if os.name == 'nt' else 'clear')
 
 # Initialize the Cohere client with your API key
-co = cohere.Client('xfjFwW0mnet9g2weZ7WQfxN4LS5Lehc2RQqg0JSb')
+co = cohere.Client('Your free Cohere API Key goes here')
 
 # Define the file path to save the chat history
 chat_history_file = "chat_history.json"
